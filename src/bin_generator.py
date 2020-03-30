@@ -45,9 +45,9 @@ def generate_bin(h=800, w=1024):
     :type h: int
     :type w: int
 
-    :returns A waste bin image with mode 'RGB' and a binary mask with values 1
+    :returns: A waste bin image with mode 'RGB' and a binary mask with values 1
         where the inside of the bin is. This np.ndarray has shape (h, w)
-    :rtype: tuple(Image, np.ndarray)
+    :rtype: tuple
     """
     # First pick the necessary colors
     bg, outside_color, inside_color = choose_colors()
