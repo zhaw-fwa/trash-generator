@@ -85,6 +85,7 @@ def generate_random_shape(num_points, smoothness):
 
 
 if __name__ == '__main__':
+    # Testing code
     import matplotlib.pyplot as plt
     polygon = generate_random_shape(10, 25)
     plt.fill(polygon[0], polygon[1])
