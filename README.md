@@ -7,12 +7,17 @@ The images themselves will be very simple, consisting mostly of solid colors and
 
 This generates an arbitrary number of image sequences, with each image sequence having arbitrary length as defined by the user or chosen randomly.
 
-A simple GUI as well as a command line interface is available to run the program.
+A simple command line interface is available to run the program.
 
+## Examples
+Here are some examples of the results of this tool for image sequences of length 9
+
+![Example of sequence of 9 images with square bins](media/sample.png)
+![Example of sequence of 9 images with round bins](media/sample2.png)
 ## To Dos
-- [ ] Create background trash cans
-- [ ] Crate/find food patterns
+- [x] Create background trash cans
+- [x] Crate/find food patterns
 - [x] Implement random blob generator
-- [ ] Implement image sequence generator
+- [x] Implement image sequence generator
+- [ ] Implement dataset generator
 - [ ] Implement command line interface
-- [ ] Implement GUI
