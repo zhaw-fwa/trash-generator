@@ -11,9 +11,9 @@ Created on:
     March 30, 2020
 """
 from PIL import Image, ImageDraw
-from os.path import join
+from os.path import join, abspath, split
 import numpy as np
-from math import ceil, floor
+from math import ceil
 from random import randint, choice
 
 from trash_generator.bin_generator import generate_bin
@@ -33,7 +33,7 @@ class BinSequence:
         :Example:
         >>> b = BinSequence()
         >>> img_sequence = b.generate_sequence()
-        >>> for img in img_sequence:
+        >>> for img, seg_gt in img_sequence:
         >>>     img.show()
         """
         self.h = h
@@ -66,8 +66,9 @@ class BinSequence:
         """
         patterns = []
         reps = [ceil(self.h / 200), ceil(self.w / 200)]
+        pattern_dir = join(split(split(abspath(__file__))[0])[0], 'patterns')
         for i, color in enumerate(self.class_colors):
-            img = Image.open(join('..', 'patterns', f'pattern__{i:04}.png'))
+            img = Image.open(join(pattern_dir, f'pattern__{i:04}.png'))
 
             # Tile the image and crop it to the main size
             img_array = np.array(img)
@@ -105,27 +106,41 @@ class BinSequence:
         self.inside_dim = (self.inside_pos[2] - self.inside_pos[0],
                            self.inside_pos[3] - self.inside_pos[1])
 
-    def generate_sequence(self, n, randomize_bin=False):
+    def generate_sequence(self, n, randomize_bin=False, top_20_white=False):
         """Generates the image sequence.
 
-        :param n: Length of the image sequence to generate.
-        :param randomize_bin: Whether or not to generate a new bin.
-        :type n: int
-        :type randomize_bin: bool
-        :returns: The generated image sequence as PIL Image files.
-        :rtype: list
+        The top 20 classes are classes [0, 19]
+
+        :param int n: Length of the image sequence to generate.
+        :param bool randomize_bin: Whether or not to generate a new bin.
+        :param bool top_20_white: Whether or not to use a white background
+            (int value 255) for the top_20_masks. Used for visibility purposes.
+        :returns: The generated image sequence as a list of PIL Image files and
+            their corresponding ground truth masks. The first GT mask is the
+            binary new object mask and the second is the segmentation of the
+            top 20 classes. The final dictionary is a mapping where the keys are
+            the colors used in the top_20_gt image and the values are their
+            actual labels.
+        :rtype: list[PIL.Image, PIL.Image, PIL.Image, dict]
         """
         if randomize_bin:
             self._randomize_bin()
 
+        t20_color = 255 if top_20_white else 0
+
         img_sequence = []
         seq_bin = self.bin_bg.copy()
         trash = Image.new('RGB', (self.w, self.h), color=self.color_in)
-        for i in range(n):
+        for _ in range(n):
+            # Ground truth images
+            new_object_gt = Image.new('L', (self.w, self.h), color=0)
+            top_20_gt = Image.new('L', (self.w, self.h), color=t20_color)
+
             # Randomly choose how many instances and their classes will appear
             # in the image
-            instances = [randint(0, 39) for _ in range(randint(1, 3))]
-            for label in instances:
+            instances = [randint(0, 39) for _ in range(randint(1, 5))]
+            label_mapping = dict()
+            for i, label in enumerate(instances):
                 # For each object instance, generate a blob and translate and
                 # scale it to somewhere inside the bin
                 blob = generate_random_shape(10, 25).T
@@ -142,12 +157,27 @@ class BinSequence:
                 instance_draw = ImageDraw.Draw(instance_mask)
                 instance_draw.polygon(blob, fill=0)
 
+                bitmap_mask = Image.new('1', (self.w, self.h), 0)
+                bitmap_draw = ImageDraw.Draw(bitmap_mask)
+                bitmap_draw.polygon(blob, fill=1)
+
+                # Add the mask to the new_object ground truth
+                new_object_gt.paste(255, mask=bitmap_mask)
+
+                # Add the mask to the top_20 ground truth if it's in the top 20
+                if label < 20:
+                    top_20_gt.paste(i + 1, mask=bitmap_mask)
+                    label_mapping[i + 1] = label
                 # Use the mask to add trash
                 trash = Image.composite(trash, self.patterns[label],
                                         instance_mask)
 
             # Use the inside mask to add trash to the bin
-            img_sequence.append(Image.composite(seq_bin, trash, self.bin_mask))
+            composed_img = Image.composite(seq_bin, trash, self.bin_mask)
+            new_object_gt.paste(0, self.bin_mask)
+            top_20_gt.paste(t20_color, self.bin_mask)
+            img_sequence.append((composed_img, new_object_gt, top_20_gt,
+                                 label_mapping))
 
         return img_sequence
 
@@ -155,4 +185,4 @@ class BinSequence:
 if __name__ == '__main__':
     b = BinSequence(300, 400)
     for i, img in enumerate(b.generate_sequence(10)):
-        img.save(f'img_{i}.png')
+        img[0].save(f'img_{i}.png')
