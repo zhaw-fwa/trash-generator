@@ -45,8 +45,10 @@ def generate_bin(h=800, w=1024):
     :type h: int
     :type w: int
 
-    :returns: A waste bin image with mode 'RGB' and a binary mask with values 1
-        where the inside of the bin is. This np.ndarray has shape (h, w)
+    :returns: A waste bin image with mode 'RGB', a binary mask with values
+        True where the inside of the bin is as an np.ndarray with shape (h, w),
+        and a list with the [x0, y0, x1, y1] coordinates of the inside of the
+        bin.
     :rtype: tuple
     """
     # First pick the necessary colors
@@ -98,7 +100,7 @@ def generate_bin(h=800, w=1024):
     # Generate inside binary mask
     mask = np.array(mask)
 
-    return img, mask
+    return img, mask, inside_dim
 
 
 if __name__ == '__main__':
