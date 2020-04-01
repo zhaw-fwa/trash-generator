@@ -17,7 +17,7 @@ from math import ceil
 from random import randint, choice
 
 from trash_generator.bin_generator import generate_bin
-from trash_generator.shape_generator import generate_random_shape
+from trash_generator.shape_generator import Shapes
 
 
 class BinSequence:
@@ -56,6 +56,7 @@ class BinSequence:
         self.inside_dim = None
         self.color_bg, self.color_out, self.color_in = None, None, None
         self._randomize_bin()
+        self.shapes = Shapes()
 
     def _generate_patterns(self):
         """Generates patterns blended with the colors representing each class.
@@ -143,7 +144,7 @@ class BinSequence:
             for i, label in enumerate(instances):
                 # For each object instance, generate a blob and translate and
                 # scale it to somewhere inside the bin
-                blob = generate_random_shape(10, 25).T
+                blob = self.shapes.get_blob(10, 25).T
                 factor = np.random.uniform(0.1, 0.8, [2])
                 scale = self.inside_dim * factor
                 blob *= scale
