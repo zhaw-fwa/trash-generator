@@ -24,14 +24,14 @@ from math import pi
 class Shapes:
     def __init__(self):
         """Contains code to generate shapes."""
-        self.banana_polygon = self._interpolate_2dim(np.array(
-        [[0.790, 0.120], [0.734, 0.273], [0.672, 0.448], [0.393, 0.694],
-         [0.123, 0.743], [0.027, 0.801], [0.020, 0.852], [0.054, 0.893],
-         [0.222, 0.933], [0.433, 0.924], [0.638, 0.835], [0.811, 0.672],
-         [0.896, 0.537], [0.954, 0.374], [0.956, 0.307], [0.925, 0.232],
-         [0.893, 0.187], [0.856, 0.131], [0.818, 0.104]]
-        ),
-        10)
+        self.banana_polygon = self._interpolate_2dim(
+            np.array(
+                [[0.790, 0.120], [0.734, 0.273], [0.672, 0.448], [0.393, 0.694],
+                 [0.123, 0.743], [0.027, 0.801], [0.020, 0.852], [0.054, 0.893],
+                 [0.222, 0.933], [0.433, 0.924], [0.638, 0.835], [0.811, 0.672],
+                 [0.896, 0.537], [0.954, 0.374], [0.956, 0.307], [0.925, 0.232],
+                 [0.893, 0.187], [0.856, 0.131], [0.818, 0.104]]),
+            n=10)
 
     @staticmethod
     def _interpolate_1dim(xs, n):
@@ -58,7 +58,6 @@ class Shapes:
 
         return np.fft.fft(fs2).real[::-1] / len(xs)
 
-
     def _interpolate_2dim(self, values, n):
         """Interpolates points smoothly from a 2-dimensional array.
 
@@ -71,9 +70,10 @@ class Shapes:
         return np.stack(
             (self._interpolate_1dim(values[:, 0], n),
              self._interpolate_1dim(values[:, 1], n))
-    )
+        )
 
-    def _get_convex_hull(self, points):
+    @staticmethod
+    def _get_convex_hull(points):
         """Gets the points that make up the convex hull.
 
         :param np.ndarray points: Points to get the convex hull of. Must be in
@@ -122,7 +122,6 @@ class Shapes:
         """
         return self.banana_polygon
 
-
     def blob(self, num_points=10, smoothness=25):
         """Generates the perimeter of a blob shaped object.
 
@@ -131,7 +130,6 @@ class Shapes:
         """
         return self._generate_random_shape(num_points, smoothness)
 
-
     def semi_ellipse(self):
         """Generates the perimeter of a sliced ellipse.
 
@@ -139,7 +137,6 @@ class Shapes:
         :rtype: np.ndarray
         """
         return self.ellipse((50, 100))
-
 
     def ellipse(self, shape=None):
         """Generates the perimeter of a random ellipse.
@@ -153,39 +150,10 @@ class Shapes:
         major_axis = randint(15, 50)
         orientation = uniform(0, pi)
         points = ellipse_perimeter(50, 50, minor_axis, major_axis,
-                                      orientation, shape)
+                                   orientation, shape)
         points = np.array(points, dtype=float) / 100.
 
         # Make points into shape [n, 2] and get the convex hull, then transpose
         # back to [2, n]
         perimeter = self._get_convex_hull(points.T).T
         return perimeter
-
-
-
-if __name__ == '__main__':
-    # Testing code
-    import matplotlib.pyplot as plt
-    polygon = Shapes().banana()
-    center = np.array([0.5, 0.5])
-    angle = pi / 2
-    polygon =  np.dot(polygon.T - center,
-                      np.array([[np.cos(angle), np.sin(angle)],
-                                [-np.sin(angle), np.cos(angle)]])) + center
-    polygon = polygon.T
-
-    steps = np.flip(polygon, 0)
-    for i in range(2):
-        wavelength = uniform(0.3, 0.6)
-        amplitude = uniform(0.001, 0.04)
-        polygon[i] += amplitude * np.sin(steps[i] / wavelength * 2 * pi)
-
-    plt.fill(polygon[0], polygon[1])
-    plt.ylim(0, 1)
-    plt.xlim(0, 1)
-    # x_vals = np.arange(0, 1, 0.001)
-    # wavelength = 0.05
-    # y_vals = np.sin(x_vals / wavelength * 2 * pi)
-    # plt.plot(x_vals, y_vals)
-    # plt.plot(semicircle_arc[0], semicircle_arc[1])
-    plt.show()
