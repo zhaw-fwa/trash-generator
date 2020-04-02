@@ -12,7 +12,7 @@ Created On:
 from csv import DictReader
 import numpy as np
 from trash_generator import Shapes
-from random import random, randint, uniform, choice
+from random import random, randint, uniform
 from math import pi
 
 
@@ -141,8 +141,6 @@ class TrashGenerator:
         """Generate the trash based on a class_label.
 
         :param int class_label: Class label to generate trash for.
-        :param np.ndarray dim: Dimensions of the inside of the bin.
-        :param int w: Width of the image to produce
         :returns: A list of np.ndarrays representing polygons of the trash
             object which fit within a 1 x 1 unit area. Each polygon has shape
             [2, n]
