@@ -107,6 +107,23 @@ class BinSequence:
         self.inside_dim = (self.inside_pos[2] - self.inside_pos[0],
                            self.inside_pos[3] - self.inside_pos[1])
 
+    def _place_trash(self, polygon):
+        """Places the trash somewhere in the bin.
+
+        :param np.ndarray polygon: [2, n] array representing the trash item as
+            a polygon
+        :returns: [2, n] np array of the trash placed somewhere in the bin.
+        :rtype: np.ndarray
+        """
+        factor = np.random.uniform(0.1, 0.8, [2])
+        scale = self.inside_dim * factor
+        polygon *= scale
+        translate = [randint(0, self.inside_dim[0]),
+                     randint(0, self.inside_dim[1])]
+        polygon += np.array(translate)
+
+        return polygon
+
     def generate_sequence(self, n, randomize_bin=False, top_20_white=False):
         """Generates the image sequence.
 
@@ -144,13 +161,11 @@ class BinSequence:
             for i, label in enumerate(instances):
                 # For each object instance, generate a blob and translate and
                 # scale it to somewhere inside the bin
-                blob = self.shapes.get_blob(10, 25).T
-                factor = np.random.uniform(0.1, 0.8, [2])
-                scale = self.inside_dim * factor
-                blob *= scale
-                translate = [randint(0, self.inside_dim[0]),
-                             randint(0, self.inside_dim[1])]
-                blob += np.array(translate)
+                # FIXME This should be replaced with trash_generator
+                # FIXME implement depth
+                # FIXME implement non-permanent objects
+                blob = self.shapes.blob(10, 25)
+                self._place_trash(blob)
 
                 # Now turn it into a mask using polygon from PIL
                 blob = blob.flatten().tolist()

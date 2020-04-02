@@ -12,7 +12,7 @@ Created On:
 from csv import DictReader
 import numpy as np
 from trash_generator import Shapes
-from random import random, randint, uniform
+from random import random, randint, uniform, choice
 from math import pi
 
 
@@ -88,11 +88,23 @@ class TrashGenerator:
     def _apply_slice(polygon):
         """Applies a slice transfomration on a polygon.
 
+        Slices by drawing a random vertical line and taking the left half.
+
         :param np.ndarray polygon: The polygon to be transformed with shape
             [2, n]
         :returns: The transformed polygon with shape [2, n]
         :rtype: np.ndarray
         """
+        line_xs = np.random.uniform(0.3, 0.7, [2])
+        line_ys = np.array(0., 1.)
+        a = line_xs[1] - line_xs[0]
+        b = polygon[1] - line_ys[0]
+        c = polygon[0] - line_xs[0]
+        d = line_ys[1] - line_ys[0]
+
+        left_of_line = a * b - c * d > 0
+
+        return polygon.T[left_of_line].T
 
     @staticmethod
     def _apply_rotation(polygon):
@@ -116,42 +128,57 @@ class TrashGenerator:
 
         Note that flipping is also possible.
 
-        :param np.ndarray polygon: The polygon to be transformed.
-        :returns: The transformed polygon.
+        :param np.ndarray polygon: The polygon to be transformed with shape
+            [2, n]
+        :returns: The transformed polygon with shape [2, n]
         :rtype: np.ndarray
         """
-        pass
+        scale = np.random.uniform(0.1, 1., [2])
+        scale *= np.random.choice([-1, 1], [2])
+        polygon *= scale
 
-    def generate_trash(self, class_label, h, w):
+    def generate_trash(self, class_label):
         """Generate the trash based on a class_label.
 
         :param int class_label: Class label to generate trash for.
-        :param int h: Height of the image to produce
+        :param np.ndarray dim: Dimensions of the inside of the bin.
         :param int w: Width of the image to produce
         :returns: A list of np.ndarrays representing polygons of the trash
-            object which fit within a 1 x 1 unit area.
+            object which fit within a 1 x 1 unit area. Each polygon has shape
+            [2, n]
         :rtype: list[np.ndarray]
         """
         class_props = self.class_properties[class_label]
+        shapes = []
 
-        # Only banana needs a scale and rotation deform
-        if class_props['shape'] == 'semicircle':
-            shape = self.shapes.semi_ellipse()
-        elif class_props['shape'] == 'circle':
-            shape = self.shapes.ellipse()
-        elif class_props['shape'] == 'banana':
-            shape = self.shapes.banana()
-            shape = self._apply_rotation(shape)
-            shape = self._apply_scale(shape)
-        else:
-            shape = self.shapes.blob()
+        # Generate a random number number of items up to and including max_items
+        num_items = randint(1, class_props['max_items'])
 
-        if class_props['p_warp_deform'] is not None:
-            if random() > class_props['p_warp_deform']:
-                shape = self._apply_warp(shape)
+        for _ in range(num_items):
+            # Only banana needs a scale and rotation deform
+            if class_props['shape'] == 'semicircle':
+                shape = self.shapes.semi_ellipse()
+            elif class_props['shape'] == 'circle':
+                shape = self.shapes.ellipse()
+            elif class_props['shape'] == 'banana':
+                shape = self.shapes.banana()
+                shape = self._apply_rotation(shape)
+                shape = self._apply_scale(shape)
+            else:
+                shape = self.shapes.blob()
 
-        if class_props['p_slice_deform'] is not None:
-            if random() > class_props['p_slice_deform']:
-                shape = self._apply_slice(shape)
+            if class_props['p_warp_deform'] is not None:
+                if random() > class_props['p_warp_deform']:
+                    shape = self._apply_warp(shape)
 
-        return shape
+            if class_props['p_slice_deform'] is not None:
+                if random() > class_props['p_slice_deform']:
+                    shape = self._apply_slice(shape)
+                    # Rotates again after slicing so it's not always a vertical
+                    # slice and not always the left side that's kept
+                    shape = self._apply_rotation(shape)
+                    shape = self._apply_scale(shape)
+
+            shapes.append(shape)
+
+        return shapes
