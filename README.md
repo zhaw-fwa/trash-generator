@@ -47,6 +47,10 @@ dataset/
 ### `annotations.json` Example
 ```json
 {
+  "categories": 
+  {
+    "1": {"super_category": "fruit", "category": "banana", "avoidable": false}
+  },
   "images": 
   {
     "2019-09-18-10-34-29.jpg": 
@@ -54,11 +58,7 @@ dataset/
       "new_obj_mask": "new_object_masks/2020-09-18-10-34-29.png",
       "top_20_mask": "top_20_masks/2020-09-18-10-34-29.png",
       "prev_image": null,
-      "next_image": "2019-09-18-10-34-43.jpg",
-      "categories": 
-      {
-        "1": {"super_category": "fruit", "category": "banana", "avoidable": false}
-      }
+      "next_image": "2019-09-18-10-34-43.jpg"
     }
   }
 }
