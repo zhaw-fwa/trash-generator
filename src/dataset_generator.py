@@ -20,35 +20,12 @@ from tqdm import tqdm
 from trash_generator.fill_bin import BinSequence
 
 
-TOP_20_CLASSES = [
-    {'super_category': 'fruit', 'category': 'lemon', 'avoidable': False},
-    {'super_category': 'menu', 'category': 'pasta', 'avoidable': True},
-    {'super_category': 'vegetable', 'category': 'sweet potato',
-     'avoidable': True},
-    {'super_category': 'menu', 'category': 'fries', 'avoidable': True},
-    {'super_category': 'menu', 'category': 'plate waste', 'avoidable': False},
-    {'super_category': 'menu', 'category': 'sandwich', 'avoidable': True},
-    {'super_category': 'vegetable', 'category': 'salad', 'avoidable': True},
-    {'super_category': 'menu', 'category': 'white sauce', 'avoidable': False},
-    {'super_category': 'fruit', 'category': 'banana', 'avoidable': True},
-    {'super_category': 'starch', 'category': 'bread roll', 'avoidable': True},
-    {'super_category': 'starch', 'category': 'bread', 'avoidable': True},
-    {'super_category': 'fruit', 'category': 'apple', 'avoidable': True},
-    {'super_category': 'fruit', 'category': 'mango', 'avoidable': True},
-    {'super_category': 'starch', 'category': 'rice', 'avoidable': True},
-    {'super_category': 'vegetable', 'category': 'cuttings', 'avoidable': False},
-    {'super_category': 'vegetable', 'category': 'carrots', 'avoidable': False},
-    {'super_category': 'menu', 'category': 'fried rice', 'avoidable': True},
-    {'super_category': 'menu', 'category': 'fish', 'avoidable': True},
-    {'super_category': 'meat', 'category': 'beef', 'avoidable': True},
-    {'super_category': 'vegetable', 'category': 'garlic', 'avoidable': False}
-]
-
-
 def parse_args():
     parser = ArgumentParser('generates trash dataset')
     parser.add_argument('DIR', type=str,
                         help='where to output the dataset')
+    parser.add_argument('CSV', type=str,
+                        help='path to the classes csv file')
     parser.add_argument('N', type=int,
                         help='number of image sequences to generate')
     parser.add_argument('LENGTH', type=int, nargs='?',
@@ -124,8 +101,6 @@ def generate_dataset(output_dir, num_sequences, length_per_seq, top_20_white):
             prev_img = None if j == 0 else f'{i:04}-{j - 1:04}'
             next_img = None if j == length_per_seq[i] - 1 \
                 else f'{i:04}-{j + 1:04}'
-
-            categories = {k: TOP_20_CLASSES[v] for k, v in labels.items()}
 
             anns['images'][img_name + '.jpg'] = {
                 'new_obj_mask': join('new_object_masks', img_name + '.png'),

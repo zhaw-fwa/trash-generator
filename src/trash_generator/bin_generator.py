@@ -20,10 +20,11 @@ def generate_bin(bg, outside_color, inside_color, h=800, w=1024):
     the given dimensions. The waste bin makes up most of the center of the image
     but maybe offset randomly.
 
-    :param h: Height of the resulting image.
-    :param w: Width of the resulting image.
-    :type h: int
-    :type w: int
+    :param str bg: Background color of the bin as a hex string.
+    :param str outside_color: Color outside of the bin as a hex string.
+    :param str inside_color: Color inside of the bin as a hex string.
+    :param int h: Height of the resulting image.
+    :param int w: Width of the resulting image.
 
     :returns: A waste bin image with mode 'RGB', a binary mask with values
         1 where the inside of the bin is as an PIL Image with mode '0' and
@@ -60,7 +61,7 @@ def generate_bin(bg, outside_color, inside_color, h=800, w=1024):
     inside_dim = [int(i) for i in inside_dim]
 
     # Create mask
-    mask = Image.new('1', (w, h), color=1)
+    mask = Image.new('1', (w, h), color=0)
     mask_draw = ImageDraw.Draw(mask)
 
     # Choose bin shape
@@ -68,11 +69,11 @@ def generate_bin(bg, outside_color, inside_color, h=800, w=1024):
     if bin_shape == 'circular':
         draw.ellipse(outside_dim, fill=outside_color)
         draw.ellipse(inside_dim, fill=inside_color)
-        mask_draw.ellipse(inside_dim, fill=0)
+        mask_draw.ellipse(inside_dim, fill=1)
     else:
         draw.rectangle(outside_dim, fill=outside_color)
         draw.rectangle(inside_dim, fill=inside_color)
-        mask_draw.rectangle(inside_dim, fill=0)
+        mask_draw.rectangle(inside_dim, fill=1)
 
     return img, mask, inside_dim
 

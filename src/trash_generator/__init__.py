@@ -1,5 +1,4 @@
-from .shape_generator import Shapes
 from .bin_generator import generate_bin
-from .trash_generator import TrashGenerator
+from .trash_gen import TrashGenerator
 
-__all__ = ['Shapes', 'generate_bin']
+__all__ = ['generate_bin', 'TrashGenerator']
