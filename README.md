@@ -22,7 +22,13 @@ python3 dataset_generator.py DIR CSV N [LENGTH] [--height val] [--width val]
 - `--height` is an optional height argument. This specifies the height of the generated image. Defaults to 800. 
 - `--width` is an optional width argument. This specifies the width of the generated image. Defaults to 1024.
 
- 
+## Requirements
+- numpy~=1.18
+- Pillow==7.0
+- scipy==1.4.1
+- scikit-image~=0.16
+- tqdm
+
 ## Annotation Schema
 This dataset uses a custom annotation style.
 

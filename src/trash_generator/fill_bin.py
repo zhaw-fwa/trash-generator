@@ -157,7 +157,7 @@ class BinSequence:
                 noise_texture[x, y] = noise.snoise3(x, y, z_val, octaves=2)
         noise_texture *= 127.0
         noise_texture += 128.0
-        noise_texture = Image.fromarray(noise_texture.astype(int))
+        noise_texture = Image.fromarray(noise_texture.astype(np.uint8))
         noise_texture = noise_texture.resize((self.w, self.h)).convert('L')
         img_tiled = Image.blend(img_tiled, noise_texture, .5).convert('RGB')
 
