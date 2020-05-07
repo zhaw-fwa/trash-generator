@@ -301,7 +301,7 @@ class BinSequence:
                     a = Image.new('RGBA', (self.w, self.h), color='#00000000')
                     a.paste(poly['image'], layer_shift, self.bin_mask)
                     # Add the blur to the layer here
-                    a = a.filter(ImageFilter.GaussianBlur(randint(0, 5)))
+                    a = a.filter(ImageFilter.GaussianBlur(randint(0, 2)))
 
                     # Crop out the area of the layer that is not inside the bin
                     b = Image.new('RGBA', (self.w, self.h))
@@ -314,7 +314,7 @@ class BinSequence:
                 # Render the top layer
                 a = Image.new('RGBA', (self.w, self.h), color='#00000000')
                 a.paste(poly['image'], (0, 0), self.bin_mask)
-                a = a.filter(ImageFilter.GaussianBlur(randint(0, 5)))
+                a = a.filter(ImageFilter.GaussianBlur(randint(0, 2)))
 
                 # Crop out area not inside the bin
                 b = Image.new('RGBA', (self.w, self.h))

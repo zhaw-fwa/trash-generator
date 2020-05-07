@@ -1,9 +1,9 @@
 # Trash Generator
 Generates randomized toy examples of food waste 🗑.
 
-As a stop-gap measure so that we can work on development even before any real data has arrived, we have decided to make a trash generation program.
+As a temporary measure so that we can work on development even before any real data has arrived, we have decided to make a trash generation program.
 The goal is to randomly generate images of trash cans with food waste in them, along with the required annotations.
-The images themselves will be very simple, consisting mostly of solid colors and lines as well as simple patterns representing different foodstuff.
+The images themselves will be relatively simple, consisting mostly of patterns and lines representing different foodstuff.
 
 This generates an arbitrary number of image sequences, with each image sequence having arbitrary length as defined by the user or chosen randomly.
 
@@ -11,14 +11,17 @@ This generates an arbitrary number of image sequences, with each image sequence 
 The generator can be run from the command line.
 
 ```bash
-python3 dataset_generator.py DIR N [LENGTH] [-a val]
+python3 dataset_generator.py DIR CSV N [LENGTH] [--height val] [--width val]
 ```
 
-- `DIR` is the where the dataset should be output to. It must be empty.
+- `DIR` is the where the dataset should be output to. If it is not empty, its contents will be overwritten.
+- `CSV` is the classes csv file. A default version is included in this repo under `src/classes.csv`.
 - `N` is the number of image sequences to generate.
 - `LENGTH` is the length of each image sequence. If none is given, then a random length between 0 and 50 will be chosen
-- `-a` is the absolute flag. If the flag is set, then the dataset will be cut to `val` images.
   e.g. if `val` is 20, `N` is 6, and `LENGTH` is 8, then the 3rd image sequence will only have 4 images. 
+- `--height` is an optional height argument. This specifies the height of the generated image. Defaults to 800. 
+- `--width` is an optional width argument. This specifies the width of the generated image. Defaults to 1024.
+
  
 ## Annotation Schema
 This dataset uses a custom annotation style.
@@ -70,5 +73,12 @@ The category keys here corresponds with the luminosity value in the correspondin
 ## Examples
 Here are some examples of the results of this tool for image sequences of length 9
 
-![Example of sequence of 9 images with square bins](media/sample.png)
-![Example of sequence of 9 images with round bins](media/sample2.png)
+![Example of sequence of 9 images with round bins](media/sample_1.jpg)
+![Example of sequence of 9 images with square bins](media/sample_2.jpg)
+
+## Color scheme
+A hand-picked color scheme was chosen for the color of the objects inside the bin to make them have colors that are more analogous to items that may be found in trash bins.
+For example, the colors are more muted and more similar to each other.
+The final chosen color scheme uses the following colors.
+
+![Chosen color scheme](media/colorscheme.png)
