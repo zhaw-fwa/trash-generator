@@ -13,8 +13,9 @@ Created on:
 import json
 from argparse import ArgumentParser
 from os import mkdir
-from os.path import join
+from os.path import join, exists
 from random import randint
+from csv import DictReader
 from tqdm import tqdm
 
 from trash_generator.fill_bin import BinSequence
@@ -30,9 +31,12 @@ def parse_args():
                         help='number of image sequences to generate')
     parser.add_argument('LENGTH', type=int, nargs='?',
                         help='length of each image sequence')
-    parser.add_argument('-v', action='store_true',
-                        help='make the top_20_masks more visible by making the '
-                             'background white')
+    parser.add_argument('--height', type=int, nargs='?',
+                        help='specifies the height of the generated image. '
+                             'Defaults to 800')
+    parser.add_argument('--width', type=int, nargs='?',
+                        help='specifies the width of the generated image. '
+                             'Defaults to 1024')
 
     return parser.parse_args()
 
@@ -43,22 +47,23 @@ def make_dir_structure(dir_path):
     :param str dir_path: Where the directory structure should be generated.
     :returns: the root path, the images path, the new_object_masks path, and the
         top_20_masks path.
-    :rtype: tuple[str, str, str, str]
+    :rtype: list[str, str, str, str]
     """
     root_path = join(dir_path, 'trash_dataset')
-    img_path = join(root_path, 'images')
-    new_path = join(root_path, 'new_object_masks')
-    t20_path = join(root_path, 'top_20_masks')
+    paths = [dir_path,
+             root_path,
+             join(root_path, 'images'),
+             join(root_path, 'new_object_masks'),
+             join(root_path, 'top_20_masks')]
 
-    mkdir(root_path)
-    mkdir(img_path)
-    mkdir(new_path)
-    mkdir(t20_path)
+    for p in paths:
+        if not exists(p):
+            mkdir(p)
 
-    return root_path, img_path, new_path, t20_path
+    return paths[1:]
 
 
-def generate_dataset(output_dir, num_sequences, length_per_seq, top_20_white):
+def generate_dataset(output_dir, num_sequences, length_per_seq, csv_fp, h, w):
     """Generates the dataset itself using the schema described in the readme.
 
     This generates the dataset immediately in the output_dir.
@@ -70,46 +75,62 @@ def generate_dataset(output_dir, num_sequences, length_per_seq, top_20_white):
     :param int or None length_per_seq: Length of each sequence in the
         dataset. If None is given, then a random value between 5 and 50 will be
         chosen.
-    :param bool top_20_white: Whether or not to make the background of the
-        top 20 masks white for visibility.
+    :param str csv_fp: Path to the classes CSV file.
+    :param int h: Height of the generated images. Defaults to 800.
+    :param int w: Width of the generated images. Defaults to 1024.
     """
-    anns = {"images": dict()}
+    h = 800 if h is None else h
+    w = 1024 if w is None else w
+    # First make dir structure
     root_path, img_path, new_path, t20_path = make_dir_structure(output_dir)
     if length_per_seq is None:
         length_per_seq = [randint(5, 50) for _ in range(num_sequences)]
     else:
         length_per_seq = [length_per_seq] * num_sequences
 
+    # Load classes csv file and read categories
+    cat_counter = 1
+    cats = dict()
+    with open(csv_fp) as csv_file:
+        reader = DictReader(csv_file)
+        for line in reader:
+            cats[str(cat_counter)] = {
+                'super_category': line['super_category'],
+                'category': line['category'],
+                'avoidable': line['avoidable']
+            }
+
+    # Initialize an empty dictionary for image annotations
+    imgs = dict()
     total = sum(length_per_seq)
     p_bar = tqdm(total=total, unit='img')
 
     for i in range(num_sequences):
-        b = BinSequence()
+        b = BinSequence(csv_fp, h, w)
 
-        sequence = b.generate_sequence(length_per_seq[i],
-                                       top_20_white=top_20_white)
+        sequence = b.generate_sequence(length_per_seq[i], p_bar)
 
-        for j, (img, new_mask, t20_mask, labels) in enumerate(sequence):
+        for j, out in enumerate(sequence):
             img_name = f'{i:04}-{j:04}'
 
             # Save the files
-            img.save(join(img_path, img_name + '.jpg'))
-            new_mask.save(join(new_path, img_name + '.png'))
-            t20_mask.save(join(t20_path, img_name + '.png'))
+            out['rendered_img'].save(join(img_path, img_name + '.jpg'))
+            out['new_object_gt'].save(join(new_path, img_name + '.png'))
+            out['top_20_gt'].save(join(t20_path, img_name + '.png'))
 
             # Add the annotation to the annotations dict
             prev_img = None if j == 0 else f'{i:04}-{j - 1:04}'
             next_img = None if j == length_per_seq[i] - 1 \
                 else f'{i:04}-{j + 1:04}'
 
-            anns['images'][img_name + '.jpg'] = {
+            imgs[img_name + '.jpg'] = {
                 'new_obj_mask': join('new_object_masks', img_name + '.png'),
                 'top_20_mask': join('top_20_masks', img_name + '.png'),
                 'prev_img': prev_img,
                 'next_img': next_img,
-                'categories': categories
             }
-            p_bar.update(1)
+
+    anns = {'categories': cats, 'images': imgs}
 
     with open(join(root_path, 'annotations.json'), mode='w') as fp:
         json.dump(anns, fp, indent=2)
@@ -117,4 +138,5 @@ def generate_dataset(output_dir, num_sequences, length_per_seq, top_20_white):
 
 if __name__ == '__main__':
     args = parse_args()
-    generate_dataset(args.DIR, args.N, args.LENGTH, args.v)
+    generate_dataset(args.DIR, args.N, args.LENGTH, args.CSV, args.height,
+                     args.width)

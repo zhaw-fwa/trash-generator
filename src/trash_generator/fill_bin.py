@@ -10,7 +10,7 @@ Author:
 Created on:
     March 30, 2020
 """
-from PIL import Image, ImageDraw, ImageColor, ImageChops
+from PIL import Image, ImageDraw, ImageColor, ImageFilter
 from os.path import join, abspath, split
 import numpy as np
 from math import ceil, sin, cos, radians, sqrt
@@ -21,7 +21,7 @@ import noise
 
 
 class BinSequence:
-    def __init__(self, class_csv, h=800, w=1024, top_20_white=False):
+    def __init__(self, class_csv, h=800, w=1024):
         """Class that can generate sequences of h, w bin images.
 
         Generates an image with 40 classes, of which only the first 20 classes
@@ -37,7 +37,6 @@ class BinSequence:
         """
         self.h = h
         self.w = w
-        self.t20_color = 255 if top_20_white else 0
         self.class_colors = ['#aeaa8a', '#545434', '#6a6354', '#c4c038',
                              '#6d7c47', '#b9796e', '#5a4107', '#bbb491',
                              '#a6a872', '#517802', '#4c3e12', '#b3c163',
@@ -64,10 +63,12 @@ class BinSequence:
         # generated bin and resizing the gradient's diameter will ensure the
         # the entire generated bin is covered.
         d = ceil(sqrt(((h / 2) ** 2) + ((w / 2) ** 2)) * 2)
-        self.light_gradient = Image.open(join(self.pattern_dir, 'gradient.png'),
-                                         mode='L')
-        self.light_gradient = self.light_gradient.resize((d, d),
-                                                         resample=Image.BICUBIC)
+        self.light_gradient = Image.open(join(self.pattern_dir, 'gradient.png'))
+        self.light_gradient = self.light_gradient.convert('L')
+        self.light_gradient = self.light_gradient.resize(
+            (d, d), resample=Image.BICUBIC
+        )
+
         self.white = None
         self.black = None
 
@@ -206,7 +207,8 @@ class BinSequence:
         self.white = np.full((self.h, self.w, 4), 255, dtype=np.uint8)
         self.white[bin_mask_array] = np.array([0, 0, 0, 0])
         self.white = Image.fromarray(self.white)
-        self.black = np.np.full((800, 1024, 4), (0, 0, 0, 255))
+        self.black = np.full((self.h, self.w, 4), (0, 0, 0, 255),
+                             dtype=np.uint8)
         self.black[np.invert(bin_mask_array)] = np.array([0, 0, 0, 0])
         self.black = Image.fromarray(self.black)
 
@@ -262,12 +264,14 @@ class BinSequence:
 
         return trash
 
-    def _render(self, trash_layers):
+    def _render(self, trash_layers, p_bar):
         """Renders the entire bin as one image.
 
         :param list[list[dict]] trash_layers: All the trash layers, with each
             sublist being a layer and the dictionaries in that list being
             individual objects.
+        :param tqdm.tqdm p_bar: A tqdm p_bar so that the sequence generation can
+            be updated per image generated. This is optional.
         :return: The rendered sequence as a list of dictionaries where the keys
             are "rendered_img", "new_object_gt", "top_20_gt". Each layer is
             returned as a separate dict.
@@ -278,7 +282,7 @@ class BinSequence:
         for i in range(len(trash_layers)):
             composed_layer = self.bin_bg.copy().convert('RGBA')
             new_object_gt = Image.new('L', (self.w, self.h), color=0)
-            top_20_gt = Image.new('L', (self.w, self.h), color=self.t20_color)
+            top_20_gt = Image.new('L', (self.w, self.h), color=255)
             for j in range(i):
                 # Loop to previous layers and shift and add them to the current
                 # layer
@@ -296,14 +300,28 @@ class BinSequence:
                 for poly in trash_layers[j]:
                     a = Image.new('RGBA', (self.w, self.h), color='#00000000')
                     a.paste(poly['image'], layer_shift, self.bin_mask)
+                    # Add the blur to the layer here
+                    a = a.filter(ImageFilter.GaussianBlur(randint(0, 5)))
+
+                    # Crop out the area of the layer that is not inside the bin
                     b = Image.new('RGBA', (self.w, self.h))
                     b.paste(a, mask=self.bin_mask)
+
+                    # Put it on the composed layer
                     composed_layer.paste(b, (0, 0), b)
+
             for poly in trash_layers[i]:
                 # Render the top layer
                 a = Image.new('RGBA', (self.w, self.h), color='#00000000')
                 a.paste(poly['image'], (0, 0), self.bin_mask)
-                composed_layer.paste(a, (0, 0), a)
+                a = a.filter(ImageFilter.GaussianBlur(randint(0, 5)))
+
+                # Crop out area not inside the bin
+                b = Image.new('RGBA', (self.w, self.h))
+                b.paste(a, mask=self.bin_mask)
+
+                # Put it on the composed layer
+                composed_layer.paste(b, (0, 0), b)
 
                 new_object_gt.paste(255, mask=a)
                 # Add poly to new_object_gt
@@ -340,19 +358,21 @@ class BinSequence:
             composed_layer.paste(shadow, mask=shadow)
 
             rendered_sequence.append({
-                'rendered_img': composed_layer,
+                'rendered_img': composed_layer.convert('RGB'),
                 'new_object_gt': new_object_gt,
                 'top_20_gt': top_20_gt
             })
-
+            p_bar.update(1)
         return rendered_sequence
 
-    def generate_sequence(self, n):
+    def generate_sequence(self, n, p_bar=None):
         """Generates the image sequence.
 
         The top 20 classes are classes [0, 19]
 
         :param int n: Length of the image sequence to generate.
+        :param tqdm.tqdm p_bar: A tqdm p_bar so that the sequence generation can
+            be updated per image generated. This is optional.
         :returns: The generated image sequence as a list of PIL Image files and
             their corresponding ground truth masks. The first GT mask is the
             binary new object mask and the second is the segmentation of the
@@ -384,7 +404,7 @@ class BinSequence:
                          'label': label}
                     )
 
-        return self._render(obj_sequence)
+        return self._render(obj_sequence, p_bar)
 
 
 if __name__ == '__main__':
@@ -393,7 +413,7 @@ if __name__ == '__main__':
         plt.imshow(img)
         plt.axis('off')
         plt.show()
-    b = BinSequence('E:\\Offline Docs\\Git\\trash-generator\\classes.csv',
+    b = BinSequence('E:\\Offline Docs\\Git\\trash-generator\\src\\classes.csv',
                     300, 400)
     for i, img in enumerate(b.generate_sequence(10)):
         plt.imshow(img['rendered_img'])

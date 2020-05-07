@@ -1,0 +1,41 @@
+super_category,category,avoidable,shape,p_warp_deform,p_slice_deform,max_items
+fruit,lemon,FALSE,semicircle,0,0.1,10
+menu,pasta,TRUE,,,,1
+vegetable,sweet potato,TRUE,,,,4
+menu,fries,TRUE,,,,30
+starch,bread,TRUE,ellipse,0.05,0.3,3
+menu,sauce white,FALSE,,,,
+vegetable,salad,TRUE,,,,
+fruit,banana,TRUE,banana,0.05,0.3,2
+starch,bread roll,TRUE,,,0.3,3
+dairy,cheese,FALSE,,,,
+other,coffee grains,FALSE,,,,
+menu,pasta,TRUE,,,,
+protein,egg,FALSE,,,,
+vegetable,mixed,FALSE,,,,
+vegetable,potato,FALSE,,,,
+menu,pizza crust,FALSE,banana,0.3,0.4,1
+starch,rice,TRUE,,,,
+non-food,bone,TRUE,,,,
+dessert,cake,TRUE,,,,
+fruit,apple,TRUE,,,,
+starch,pita,TRUE,semicircle,0.05,0.4,1
+vegetable,spinach,FALSE,,,,
+fruit,orange,FALSE,semicircle,0.05,0.1,10
+menu,egg scrambled,FALSE,,,,
+vegetable,tomato,FALSE,ellipse,0.05,0.3,5
+protein,fish,FALSE,,,,
+protein,sausage,FALSE,banana,0.5,0.4,2
+vegetable,carrot,TRUE,banana,0,0.7,3
+menu,sandwich,TRUE,,,,
+fruit,melon,TRUE,,,,
+fruit,strawberry,TRUE,,,,
+desert,tart,TRUE,,,,
+vegetable,broccoli,TRUE,,,,
+vegetable,cucumber,TRUE,,,,
+vegetable,mushroom,FALSE,,,,
+vegetable,zucchini,TRUE,,,,
+fruit,mandarin,FALSE,,,,
+protein,beef,TRUE,,,,
+fruit,passionfruit,TRUE,,,,
+vegetable,potato,TRUE,,,,
