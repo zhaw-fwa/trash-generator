@@ -1,6 +1,6 @@
 """Dataset Generator.
 
-Generates the dataset. This uses fill_bin.py to generate multiple image
+Generates the dataset. This uses bin_sequence.py to generate multiple image
 sequences of a bin being filled. It then generates images that can be saved
 along with annotations in the format specified in README.md
 
@@ -18,7 +18,7 @@ from random import randint
 from csv import DictReader
 from tqdm import tqdm
 
-from trash_generator.fill_bin import BinSequence
+from trash_generator import BinSequence
 
 
 def parse_args():

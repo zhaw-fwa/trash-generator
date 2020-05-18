@@ -1,4 +1,15 @@
-"""Color Generator."""
+"""Color Generator.
+
+Food waste is usually has colors ranging red to green. This includes yellows
+and browns. A usual categorical color selection would thus be unsuitable, as it
+aims to provide colors that are as distinct from each other as possible. Since
+most food waste is similarly colored, a custom randomization script to choose
+colors was necessary. This is the result.
+
+Author:
+    Yvan Satyawan <y_satyawan@hotmail.com>
+
+"""
 from random import uniform
 from colorsys import hsv_to_rgb
 from PIL import Image, ImageDraw

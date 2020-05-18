@@ -88,3 +88,22 @@ For example, the colors are more muted and more similar to each other.
 The final chosen color scheme uses the following colors.
 
 ![Chosen color scheme](media/colorscheme.png)
+
+The color scheme was generated using the the script `trash_generator/color_generator.py`. 
+
+## To Future Users and Contributors
+In case you need to modify code or understand how it works, here's the flow of the code.
+
+1. `dataset_generator.py` is run. Inside this file, the function `generate_dataset()` is called.
+2. `generate_dataset()` figures out the required parameters of the dataset to be generated.
+3. `generate_dataset()` then creates a `BinSequence` instance, which can be found in `trash_generator/bin_sequence.py`.
+4. `BinSequence` first generates a random rubbish bin image in its `_randomize_bin()` method, which calls the `generate_bin()` function in the file `trash_generator/bin_generator.py`.
+5. `BinSequence` also creates a `TrashGenerator` instance, which creates the random shapes necessary to fill the bin with.
+6. `TrashGenerator` is a class that can be found in `trash_generator/trash_gen.py`.
+7. `TrashGenerator` uses the `classes.csv` file to figure out what each class should be shaped like and how they behave.
+8. `BinSequence` also determines the colors for the classes. They are hard-coded as hex strings with the variable name `self.class_colors`.
+    1. The color of the bin, its inside, and the background are randomly selected by a possible range of colors in `BinGenerator`'s `_choose_colors()` method.
+9. Once the initialization is completed, `generate_dataset()` calls the `generate_sequence()` method of `BinSequence`, which generates a sequence of images and their corresponding ground truths.
+   The actual trash sequence is rendered by the `_render()` method, which also adds various noise into the image.
+10. Finally, `generate_dataset()` receives the generated images and generates the actual annotation and file structure required. 
+
