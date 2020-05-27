@@ -29,6 +29,12 @@ python3 dataset_generator.py DIR CSV N [LENGTH] [--height val] [--width val]
 - scikit-image~=0.16
 - tqdm
 
+These requirements can be met/installed most easily by using pip.
+
+```bash
+pip install -r requirements.txt 
+```
+
 ## Annotation Schema
 This dataset uses a custom annotation style.
 
