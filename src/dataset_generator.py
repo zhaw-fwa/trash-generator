@@ -99,6 +99,7 @@ def generate_dataset(output_dir, num_sequences, length_per_seq, csv_fp, h, w):
                 'category': line['category'],
                 'avoidable': line['avoidable']
             }
+            cat_counter += 1
 
     # Initialize an empty dictionary for image annotations
     imgs = dict()
