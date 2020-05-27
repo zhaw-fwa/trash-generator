@@ -120,9 +120,9 @@ def generate_dataset(output_dir, num_sequences, length_per_seq, csv_fp, h, w):
             out['top_20_gt'].save(join(t20_path, img_name + '.png'))
 
             # Add the annotation to the annotations dict
-            prev_img = None if j == 0 else f'{i:04}-{j - 1:04}'
+            prev_img = None if j == 0 else f'{i:04}-{j - 1:04}.jpg'
             next_img = None if j == length_per_seq[i] - 1 \
-                else f'{i:04}-{j + 1:04}'
+                else f'{i:04}-{j + 1:04}.jpg'
 
             imgs[img_name + '.jpg'] = {
                 'new_obj_mask': join('new_object_masks', img_name + '.png'),
