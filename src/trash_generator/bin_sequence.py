@@ -17,36 +17,27 @@ from math import ceil, sin, cos, radians, sqrt
 from random import randint, choice, uniform
 from colorsys import rgb_to_hls, hls_to_rgb
 from trash_generator import TrashGenerator, generate_bin
+from utils import import_colors
 import noise
 
 
 class BinSequence:
-    def __init__(self, class_csv, h=800, w=1024):
+    def __init__(self, class_csv: str, color_csv: str,
+                 h: int = 800, w: int =1024):
         """Class that can generate sequences of h, w bin images.
 
         Generates an image with 40 classes, of which only the first 20 classes
         should be classified.
 
-        :param str class_csv: Path to a CSV file containing class definitions.
-            Values that the csv file must contain can be found in the
-            TrashGenerator docstring.
-        :param int h: Height of image.
-        :param int w: Width of image
-        :param bool top_20_white: Whether or not to use a white background
-            (int value 255) for the top_20_masks. Used for visibility purposes.
+        :param class_csv: Path to a CSV file containing class definitions.
+        :param color_csv: Path to a CSV file containing color definitions.
+        :param h: Height of image.
+        :param w: Width of image
+
         """
         self.h = h
         self.w = w
-        self.class_colors = ['#aeaa8a', '#545434', '#6a6354', '#c4c038',
-                             '#6d7c47', '#b9796e', '#5a4107', '#bbb491',
-                             '#a6a872', '#517802', '#4c3e12', '#b3c163',
-                             '#524c32', '#ad7e2d', '#6d1905', '#918030',
-                             '#acaf8a', '#4f5f0f', '#577b0f', '#8d7732',
-                             '#9a6d5e', '#926a2d', '#9aac7b', '#566907',
-                             '#c49a59', '#7a825f', '#8a9238', '#4e211f',
-                             '#5a4847', '#589019', '#b71d15', '#948364',
-                             '#59110b', '#bd8177', '#50413c', '#c0a986',
-                             '#999d14', '#ad8752', '#b84f15', '#97a280']
+        self.class_colors = import_colors(color_csv)
 
         self.bin_bg = None
         self.bin_mask = None
@@ -117,12 +108,15 @@ class BinSequence:
 
         return [int(x0), int(y0), int(x1), int(y1)]
 
-    def _generate_patterns(self, label):
-        """Generates patterns blended with the colors representing each class.
+    def _generate_pattern(self, label, color):
+        """Generates a pattern blended with the colors representing each class.
 
+        :param int label: The class label. Used to get the pattern to use for
+            the class.
+        :param int color: The color index that should be used for the class.
         :returns: A list of tiled versions of each pattern as large as the
             main image size.
-        :rtype: list
+        :rtype: PIL.Image.Image
         """
 
         img = Image.open(join(self.pattern_dir, f'pattern__{label:04}.png'))
@@ -163,7 +157,7 @@ class BinSequence:
 
         # Randomly shift the color hue by 2% of a full circle
         color = [float(i) / 255.
-                 for i in ImageColor.getrgb(self.class_colors[label])]
+                 for i in ImageColor.getrgb(self.class_colors[color])]
         color = np.array(rgb_to_hls(*color))
         shifts = np.random.uniform(-0.1, 0.1, [3]) * color
         color += shifts
@@ -238,7 +232,7 @@ class BinSequence:
 
         return out_list
 
-    def _rasterize_trash(self, polygon, label):
+    def _rasterize_trash(self, polygon, label, color):
         """Rasterizes the polygon by filling it with a pattern.
 
         Places the class pattern, adds a color, and adds Perlin noise to the
@@ -249,13 +243,14 @@ class BinSequence:
 
         :param np.ndarray polygon: The polygon to be filled with shape [2, n]
         :param int label: The label the polygon has.
+        :param int color: The color index the polygon should have.
         :returns: An image of the polygon filled with a colorized pattern.
         :rtype: PIL.Image
         """
         # Convert the polygon into the right shape
         polygon = [(x, y) for x, y in polygon.T.tolist()]
         # Place the pattern somewhere
-        pattern = self._generate_patterns(label)
+        pattern = self._generate_pattern(label, color)
         tmask = Image.new('1', (self.w, self.h), 0)
         t_draw = ImageDraw.Draw(tmask)
         t_draw.polygon(polygon, fill=1)
@@ -396,11 +391,11 @@ class BinSequence:
             for label in instances:
                 # For each thing we have to make, generate a list of the trash
                 # objects it should be made up of.
-                polygons = self.trash_generator.generate_trash(label)
+                polygons, color = self.trash_generator.generate_trash(label)
                 polygons = self._place_trash(polygons)
                 for polygon in polygons:
                     obj_sequence[i].append(
-                        {'image': self._rasterize_trash(polygon, label),
+                        {'image': self._rasterize_trash(polygon, label, color),
                          'label': label}
                     )
 
@@ -414,6 +409,7 @@ if __name__ == '__main__':
         plt.axis('off')
         plt.show()
     b = BinSequence('E:\\Offline Docs\\Git\\trash-generator\\src\\classes.csv',
+                    'E:\\Offline Docs\\Git\\trash-generator\\src\\colors.csv',
                     300, 400)
     for i, img in enumerate(b.generate_sequence(10)):
         plt.imshow(img['rendered_img'])

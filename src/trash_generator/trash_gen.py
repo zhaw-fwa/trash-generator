@@ -278,14 +278,16 @@ class TrashGenerator:
         perimeter = self._get_convex_hull(points.T).T
         return perimeter
 
-    def generate_trash(self, class_label):
+    def generate_trash(self, class_label: int):
         """Generate the trash based on a class_label.
 
-        :param int class_label: Class label to generate trash for.
-        :returns: A list of np.ndarrays representing polygons of the trash
-            object which fit within a 1 x 1 unit area. Each polygon has shape
-            [2, n]
-        :rtype: list[np.ndarray]
+        :param class_label: Class label to generate trash for.
+        :returns: A tuple. The first element is a list of np.ndarrays
+            representing polygons of the trash object which fit within a
+            1 x 1 unit area. Each polygon has shape [2, n].
+            The second element is a single int value which represents the index
+            of the color that should be used.
+        :rtype: tuple[list[np.ndarray], int]
         """
         class_props = self.class_properties[class_label]
         shapes = []
@@ -322,5 +324,9 @@ class TrashGenerator:
                     shape = self._apply_scale(shape)
 
             shapes.append(shape)
+        if class_props['color'] is not None:
+            color = class_props['color']
+        else:
+            color = randint(0, 39)
 
-        return shapes
+        return shapes, color
