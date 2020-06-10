@@ -100,7 +100,7 @@ A hand-picked color scheme was chosen for the color of the objects inside the bi
 For example, the colors are more muted and more similar to each other.
 The final chosen color scheme uses the following colors.
 
-![Chosen color scheme](media/colorscheme.png)
+![Chosen color scheme](media/color_palette.png)
 
 The color scheme was generated using the the script `trash_generator/color_generator.py`. 
 

@@ -113,4 +113,4 @@ if __name__ == '__main__':
                            "colors.csv")
     print(colors)
     visualize_palette(colors, "E:\\Offline Docs\\Git\\trash-generator\\media\\"
-                              "colorscheme.png")
+                              "color_palette.png")
