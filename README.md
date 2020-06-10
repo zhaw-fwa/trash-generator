@@ -1,5 +1,7 @@
 # Trash Generator
 
+![ZHAW Kitro Header](media/kitro_header.png)
+
 Generates randomized toy examples of food waste 🗑.
 
 As a temporary measure so that we can work on development even before any real data has arrived, we have decided to make a trash generation program.
@@ -20,8 +22,8 @@ python3 dataset_generator.py DIR CSV N [LENGTH] [--height val] [--width val]
 - `CSV` is the classes csv file. A default version is included in this repo under `src/classes.csv`.
 - `N` is the number of image sequences to generate.
 - `LENGTH` is the length of each image sequence. If none is given, then a random length between 0 and 50 will be chosen
-  e.g. if `val` is 20, `N` is 6, and `LENGTH` is 8, then the 3rd image sequence will only have 4 images. 
-- `--height` is an optional height argument. This specifies the height of the generated image. Defaults to 800. 
+  e.g. if `val` is 20, `N` is 6, and `LENGTH` is 8, then the 3rd image sequence will only have 4 images.
+- `--height` is an optional height argument. This specifies the height of the generated image. Defaults to 800.
 - `--width` is an optional width argument. This specifies the width of the generated image. Defaults to 1024.
 
 ## Requirements
@@ -35,7 +37,7 @@ python3 dataset_generator.py DIR CSV N [LENGTH] [--height val] [--width val]
 These requirements can be met/installed most easily by using pip.
 
 ```bash
-pip install -r requirements.txt 
+pip install -r requirements.txt
 ```
 
 ## Annotation Schema
@@ -68,13 +70,13 @@ dataset/
 
 ```json
 {
-  "categories": 
+  "categories":
   {
     "1": {"super_category": "fruit", "category": "banana", "avoidable": false}
   },
-  "images": 
+  "images":
   {
-    "2019-09-18-10-34-29.jpg": 
+    "2019-09-18-10-34-29.jpg":
     {
       "new_obj_mask": "new_object_masks/2020-09-18-10-34-29.png",
       "top_20_mask": "top_20_masks/2020-09-18-10-34-29.png",
@@ -85,8 +87,7 @@ dataset/
 }
 ```
 
-The category keys here corresponds with the luminosity value in the corresponding 8-bit top_20 segmentation mask. 
-
+The category keys here corresponds with the luminosity value in the corresponding 8-bit top_20 segmentation mask.
 
 ## Examples
 
@@ -96,6 +97,7 @@ Here are some examples of the results of this tool for image sequences of length
 ![Example of sequence of 9 images with square bins](media/sample_2.jpg)
 
 ## Color scheme
+
 A randomized color palette was chosen for the color of the objects inside the bin to make them have colors that are more analogous to items that may be found in trash bins.
 They were chosen by randomizing colors in a specific hue range between red to green with lower saturations to simulate real food stuff.
 
@@ -103,8 +105,8 @@ The final chosen color scheme uses the following colors.
 
 ![Chosen color scheme](media/color_palette.png)
 
-The color scheme was generated using the the script `utils/color_utils.py`. 
-These colors are ordered according to their hue value and the superimposed numbers refer to their index in the `colors.csv` file. 
+The color scheme was generated using the the script `utils/color_utils.py`.
+These colors are ordered according to their hue value and the superimposed numbers refer to their index in the `colors.csv` file.
 
 ## Classes CSV file
 
@@ -120,7 +122,7 @@ The file `classes.csv` is used to specify properties of each class that is gener
 | `p_warp_deform`  | Takes a value in the range [0, 1]. The probability that a warp deformation is applied. A warp deformation are two sine waves with random amplitude and wavelength applied on the x and y axes respectively, being added to each x, y coordinate on the perimeter of the shape.                                                                                      |
 | `p_slice_deform` | Takes a value in the range [0, 1]. The probability that the shape will be sliced at a random angle and position.                                                                                                                                                                                                                                                    |
 | `max_items`      | Takes an integer value greater than 0. The number of items to generate for each instance of this class. A random value in the range [1, max_items] of items is then generated, and each item scaled down proportionally to the number of items generated. Useful for objects such as french fries, where there may be many small items in one instance of the item. |
- 
+
 ## To Future Users and Contributors
 
 In case you need to modify code or understand how it works, here's the flow of the code.
@@ -136,7 +138,7 @@ In case you need to modify code or understand how it works, here's the flow of t
     1. The color of the bin, its inside, and the background are randomly selected by a possible range of colors in `BinGenerator`'s `_choose_colors()` method.
 9. Once the initialization is completed, `generate_dataset()` calls the `generate_sequence()` method of `BinSequence`, which generates a sequence of images and their corresponding ground truths.
    The actual trash sequence is rendered by the `_render()` method, which also adds various noise into the image.
-10. Finally, `generate_dataset()` receives the generated images and generates the actual annotation and file structure required. 
+10. Finally, `generate_dataset()` receives the generated images and generates the actual annotation and file structure required.
 
 ### Repository structure
 
@@ -161,5 +163,5 @@ trash-generator/
     ├── classes.csv           # Class attributes file
     ├── colors.csv            # Color specifications file
     └── dataset_generator.py  # The file that should be run. generate_dataset() is in here.
-                              # Takes a BinSequence object and processes it into the appropriate format. 
+                              # Takes a BinSequence object and processes it into the appropriate format.
 ```
