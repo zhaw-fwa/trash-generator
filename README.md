@@ -96,13 +96,15 @@ Here are some examples of the results of this tool for image sequences of length
 ![Example of sequence of 9 images with square bins](media/sample_2.jpg)
 
 ## Color scheme
-A hand-picked color scheme was chosen for the color of the objects inside the bin to make them have colors that are more analogous to items that may be found in trash bins.
-For example, the colors are more muted and more similar to each other.
+A randomized color palette was chosen for the color of the objects inside the bin to make them have colors that are more analogous to items that may be found in trash bins.
+They were chosen by randomizing colors in a specific hue range between red to green with lower saturations to simulate real food stuff.
+
 The final chosen color scheme uses the following colors.
 
 ![Chosen color scheme](media/color_palette.png)
 
-The color scheme was generated using the the script `trash_generator/color_generator.py`. 
+The color scheme was generated using the the script `utils/color_utils.py`. 
+These colors are ordered according to their hue value and the superimposed numbers refer to their index in the `colors.csv` file. 
 
 ## Classes CSV file
 
@@ -113,7 +115,7 @@ The file `classes.csv` is used to specify properties of each class that is gener
 | `super_category` | Super category of the trash item to be generated. This is arbitrary and can be any value. An example is "fruit"                                                                                                                                                                                                                                                     |
 | `category`       | The actual category of the item. An example for the `super_category` "fruit" would be "banana".                                                                                                                                                                                                                                                                     |
 | `avoidable`      | Whether or not the waste was avoidable. This does not have an impact on the bin image generation, but its value is stored in the categories section of the annotation file.                                                                                                                                                                                         |
-| `color`          | Takes a value in the range [0, 39]. The color is then taken from the file `colors.csv`. The available colors are visualized below with their index values superimposed on the palette                                                                                                                                                                               |
+| `color`          | Takes a value in the range [0, 39]. The color is then taken from the file `colors.csv`. The available colors are visualized above with their index values superimposed on the palette                                                                                                                                                                               |
 | `shape`          | Takes a value in ("semicircle", "ellipse", "banana", ""). This is the base shape that is generated. If "" is chosen, i.e. nothing is put in this field, then a pseudo-random shape is generated. Note that deform attributes can only be applied to classes which have a given shape, as deforming an already random shape is non-productive.                       |
 | `p_warp_deform`  | Takes a value in the range [0, 1]. The probability that a warp deformation is applied. A warp deformation are two sine waves with random amplitude and wavelength applied on the x and y axes respectively, being added to each x, y coordinate on the perimeter of the shape.                                                                                      |
 | `p_slice_deform` | Takes a value in the range [0, 1]. The probability that the shape will be sliced at a random angle and position.                                                                                                                                                                                                                                                    |
